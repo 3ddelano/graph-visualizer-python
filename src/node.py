@@ -1,5 +1,5 @@
 # Graph Visualizer
-# 20 Jan 2021
+# 27 Jan 2021
 # Group 2 - CSE1014 Lab
 
 NODE_SIZE = 24
@@ -39,15 +39,22 @@ class Node:
             return False
         return True
 
-    def draw(self, tur):
+    def draw(self, tur, color=NORMAL_COLOR):
         tur.penup()
         tur.goto(self.pos[0], self.pos[1])
         tur.pendown()
 
-        node_color = NORMAL_COLOR
-        if self.is_selected:
-            node_color = SELECTED_COLOR
-        if self.is_dragging:
-            node_color = DRAGGING_COLOR
+        if color == NORMAL_COLOR:
+            if self.is_selected:
+                color = SELECTED_COLOR
+            if self.is_dragging:
+                color = DRAGGING_COLOR
 
-        tur.dot(NODE_SIZE, node_color)
+        tur.dot(NODE_SIZE, color)
+
+    def draw_id(self, tur):
+        tur.penup()
+        tur.goto(self.pos[0], self.pos[1] + NODE_SIZE * 0.5)
+        tur.pendown()
+        tur.color("#222")
+        tur.write(self.id, align="center", font=("Arial", 12, "normal"))

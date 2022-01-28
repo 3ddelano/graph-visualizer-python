@@ -1,9 +1,8 @@
 # Graph Visualizer
-# 20 Jan 2021
+# 27 Jan 2021
 # Group 2 - CSE1014 Lab
 
 from math import sqrt
-from subprocess import HIGH_PRIORITY_CLASS
 
 
 EDGE_SIZE = 12
@@ -56,14 +55,15 @@ class Edge:
         else:
             return False
 
-    def draw(self, tur):
+    def draw(self, tur, color=NORMAL_COLOR):
         tur.penup()
+
         if self.is_selected:
-            tur.color(SELECTED_COLOR)
+            color = SELECTED_COLOR
         elif self.is_dragging:
-            tur.color(DRAGGING_COLOR)
-        else:
-            tur.color(NORMAL_COLOR)
+            color = DRAGGING_COLOR
+        tur.color(color)
+
         tur.pensize(EDGE_SIZE)
         # Goto nodeA's position
         tur.goto(self.nodeA.pos[0], self.nodeA.pos[1])

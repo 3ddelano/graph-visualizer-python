@@ -1,5 +1,5 @@
-# Graph Visualizer
-# 20 Jan 2021
+# Graph BFS Visualizer
+# 27 Jan 2021
 # Group 2 - CSE1014 Lab
 
 import turtle
@@ -16,6 +16,7 @@ def one_step():
         screen.update()
         screen.ontimer(one_step, 50)
     except Exception as e:
+        print(e)
         print("Exiting program")
         quit()
 
@@ -37,7 +38,8 @@ screen.setworldcoordinates(0, 720, 1280, 0)
 screen.bgcolor("#333333")
 screen.title("Graph Visualizer")
 
-turtle.tracer(False)
+# turtle.tracer(False)
+turtle.tracer(0)
 tur = turtle.Turtle()
 tur.speed(0)
 tur.hideturtle()
@@ -50,9 +52,13 @@ onmove(screen, graph.ondrag, 1)
 screen.onkey(graph.onsave, "s")
 screen.onkey(graph.onload, "l")
 screen.onkey(graph.ondelete, "d")
+screen.onkey(graph.onbfsstart, "b")
+screen.onkey(graph.ondfsstart, "n")
+screen.onkey(graph.onhelptoggle, "h")
+screen.onkey(graph.onnodeidtoggle, "f")
 exited = False
 
 # Main loop
-print("Graph Visualizer starting...")
+print("Graph BFS Visualizer starting...")
 one_step()
 screen.mainloop()

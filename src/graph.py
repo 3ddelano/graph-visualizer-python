@@ -1,19 +1,23 @@
 # Graph Visualizer
-# 20 Jan 2021
+# 27 Jan 2021
 # Group 2 - CSE1014 Lab
 
 from time import time
 from os import path
-from tracemalloc import start
+from graph_interface import GraphInterface
 from node import Node
 from edge import Edge
+from bfs_animation import BFSAnimation
+from dfs_animation import DFSAnimation
 
 DOUBLE_CLICK_TIME = 0.3
 NODELIST_FILEPATH = "nodelist.csv"
 EDGELIST_FILEPATH = "edgelist.csv"
 
+ANIMATION_FRAME_DURATION = 9
 
-class Graph:
+
+class Graph(GraphInterface):
     def __init__(self):
         self.nodes = []
         self.edges = []
@@ -28,6 +32,11 @@ class Graph:
 
         self.last_leftclick_time = time()
         self.last_rightclick_time = time()
+
+        self.animation = None
+        self.frames = 0
+        self.help_visible = True
+        self.node_id_visible = False
 
     def deselect_nodes(self):
         if self.selected_node:
@@ -65,7 +74,7 @@ class Graph:
                 return edge
         return None
 
-    def get_connected_edges(self, node):
+    def get_adjacent_edges(self, node):
         connected_edges = []
 
         for edge in self.edges:
@@ -74,7 +83,7 @@ class Graph:
 
         return connected_edges
 
-    def get_connected_nodes(self, node):
+    def get_adjacent_nodes(self, node):
         connected_nodes = []
 
         for edge in self.edges:
@@ -84,6 +93,14 @@ class Graph:
                 connected_nodes.append(edge.nodeA)
 
         return connected_nodes
+
+    def get_edge(self, nodeA, nodeB):
+        for edge in self.edges:
+            if edge.nodeA == nodeA and edge.nodeB == nodeB:
+                return edge
+            if edge.nodeB == nodeA and edge.nodeA == nodeB:
+                return edge
+        return None
 
     def get_node_by_id(self, id):
         for node in self.nodes:
@@ -199,7 +216,7 @@ class Graph:
 
                         if not edge_exists:
                             edge = Edge(self.selected_node, clicked_node)
-                            self.edges.append(edge)
+                            self.add_edge(edge)
 
                         # Deselect the selected node and select the clicked node
                         self.selected_node.is_selected = False
@@ -215,14 +232,14 @@ class Graph:
             # Empty area was clicked
 
             node = Node(x, y)
-            self.nodes.append(node)
+            self.add_node(node)
 
             if self.selected_node:
                 # A node is already selected
 
                 # Draw an edge from selected node to new clicked node
                 edge = Edge(self.selected_node, node)
-                self.edges.append(edge)
+                self.add_edge(edge)
 
                 # Deselect the selected node
                 self.selected_node.is_selected = False
@@ -294,7 +311,7 @@ class Graph:
                 # id,x,y
                 line = line.strip().split(",")
                 node = Node(int(line[0]), float(line[1]), float(line[2]))
-                self.nodes.append(node)
+                self.add_node(node)
 
         with open(EDGELIST_FILEPATH, "r") as file:
             for line in file:
@@ -303,50 +320,90 @@ class Graph:
                 nodeA = self.get_node_by_id(int(line[1]))
                 nodeB = self.get_node_by_id(int(line[2]))
                 edge = Edge(int(line[0]), nodeA, nodeB)
-                self.edges.append(edge)
+                self.add_edge(edge)
 
     def ondelete(self):
         if self.selected_node:
             # Delete the node
             node = self.selected_node
             node.is_selected = False
-            self.nodes.remove(node)
+            self.remove_node(node)
 
             # Delete connected edges
-            connected_edges = self.get_connected_edges(node)
+            connected_edges = self.get_adjacent_edges(node)
             for edge in connected_edges:
-                self.edges.remove(edge)
+                self.remove_edge(edge)
 
             self.selected_node = None
         elif self.selected_edge:
             # Delete the edge
             edge = self.selected_edge
             edge.is_selected = False
-            self.edges.remove(edge)
+            self.remove_edge(edge)
             self.selected_edge = None
 
     def draw(self, tur):
+        # Check if animation ended
+        if self.animation and self.animation.is_ended():
+            self.animation = None
+
+        # Animate the animation if any
+        animation_nodes = []
+        animation_edges = []
+        if self.animation:
+            if self.frames % ANIMATION_FRAME_DURATION == 0:
+                # Take a animation step
+                self.animation.one_step()
+
+            # Get the drawn nodes and edges from animation
+            animation_nodes = self.animation.get_drawn_nodes()
+            animation_edges = self.animation.get_drawn_edges()
+
         # Draw all edges
         for edge in self.edges:
-            edge.draw(tur)
+            animation_drew_edge = False
+            for edge_data in animation_edges:
+                if edge == edge_data["edge"]:
+                    edge.draw(tur, color=edge_data["color"])
+                    animation_drew_edge = True
+                    break
+            if not animation_drew_edge:
+                edge.draw(tur)
 
         # Draw all nodes
         for node in self.nodes:
-            node.draw(tur)
+            animation_drew_node = False
+            for node_data in animation_nodes:
+                if node == node_data["node"]:
+                    node.draw(tur, color=node_data["color"])
+                    animation_drew_node = True
+                    break
+            if not animation_drew_node:
+                node.draw(tur)
+
+            if self.node_id_visible:
+                node.draw_id(tur)
+
+        self.frames += 1
 
         # Show help text
         self.draw_help(tur)
 
     def draw_help(self, tur):
+        main_lines = ["Graph Visualizer v1.0",
+                      "H key - Toggle help text"]
         lines = [
-            "Graph Visualizer v1.0",
             "Single Left Click - Add node / Select Node",
             "Single Right Click - Select Edge",
             "Double Left Click - Move Node",
             "Double Right Click - Move Edge",
+            "",
             "D key - Delete Node/Edge",
             "S key - Save data",
             "L key - Load data",
+            "B key - Start BFS at selected node",
+            "N key - Start DFS at selected node",
+            "F key - Toggle node Id visibility",
         ]
 
         font_size = 10
@@ -355,8 +412,58 @@ class Graph:
         draw_pos = [0, 16]
         tur.penup()
         tur.color("#fff")
+        for line in main_lines:
+            tur.goto(draw_pos[0], draw_pos[1])
+            tur.write(line, font=font)
+            draw_pos[1] += font_size + 10
+
+        if not self.help_visible:
+            return
+
         for line in lines:
             tur.goto(draw_pos[0], draw_pos[1])
             tur.write(line, font=font)
 
             draw_pos[1] += font_size + 10
+
+    def onbfsstart(self):
+        # Check if a node is selected
+        if not self.selected_node:
+            print("No node is selected for BFS")
+            return
+
+        # Start bfs from the selected node
+        print("Starting BFS at node id=", self.selected_node.id)
+        self.animation = BFSAnimation(self)
+        self.animation.set_start_node(self.selected_node)
+        self.deselect_nodes()
+
+    def ondfsstart(self):
+        # Check if a node is selected
+        if not self.selected_node:
+            print("No node is selected for DFS")
+            return
+
+        # Start dfs from the selected node
+        print("Starting DFS at node id=", self.selected_node.id)
+        self.animation = DFSAnimation(self)
+        self.animation.set_start_node(self.selected_node)
+        self.deselect_nodes()
+
+    def onhelptoggle(self):
+        self.help_visible = not self.help_visible
+
+    def onnodeidtoggle(self):
+        self.node_id_visible = not self.node_id_visible
+
+    def add_node(self, node):
+        self.nodes.append(node)
+
+    def delete_node(self, node):
+        self.nodes.remove(node)
+
+    def add_edge(self, edge):
+        self.edges.append(edge)
+
+    def delete_edge(self, edge):
+        self.edges.remove(edge)
