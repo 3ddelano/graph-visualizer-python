@@ -1,7 +1,14 @@
+"""
+File: animation_interface.py
+Author: Delano Lourenco
+Repo: https://github.com/3ddelano/graph-visualizer-python
+License: MIT
+"""
+
 import abc
 
 
-class AlgorithmAnimation(abc.ABC):
+class AnimationInterface(abc.ABC):
     @abc.abstractmethod
     def one_step(self):
         pass

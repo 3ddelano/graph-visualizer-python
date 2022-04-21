@@ -1,9 +1,24 @@
-from algorithm_animation import AlgorithmAnimation
+"""
+File: dfs_animation.py
+Author: Delano Lourenco
+Repo: https://github.com/3ddelano/graph-visualizer-python
+License: MIT
+"""
+
+from ..constants import (
+    CURRENT_EDGE_COLOR,
+    CURRENT_NODE_COLOR,
+    SEEN_EDGE_COLOR,
+    SEEN_NODE_COLOR,
+    START_NODE_COLOR,
+)
+from ..interfaces.animation_interface import AnimationInterface
 
 
-class DFSAnimation(AlgorithmAnimation):
+class DFSAnimation(AnimationInterface):
     def __init__(self, graph):
         self.graph = graph
+        self.cur_node = None
         self.start_node = None
         self.stack = []  # used in the algorithm
         self.visited = []  # used in the algorithm and for drawing the visited nodes
@@ -11,29 +26,29 @@ class DFSAnimation(AlgorithmAnimation):
         self.prev_nodes = []
 
     def set_start_node(self, node):
-        self.start_node = node
-        # Print the entire DFS
-        self.print_algorithm()
+        self.cur_node = node
 
     def is_ended(self):
-        return self.start_node is None and len(self.stack) == 0
+        return self.cur_node is None and len(self.stack) == 0
 
     def one_step(self):
         # One step in the DFS algorithm
-        if self.start_node is None:
+        if self.cur_node is None:
             return
 
         # Dfs
-        if not self.start_node in self.visited:
-            self.stack.append(self.start_node)
+        if not self.cur_node in self.visited:
+            self.stack.append(self.cur_node)
+            self.start_node = self.cur_node
+
         if len(self.stack) > 0:
             node = self.stack[-1]
             self.stack.pop()
 
             if not node in self.visited:
-                self.start_node = node
+                self.cur_node = node
                 for visited in self.visited:
-                    edge = self.graph.get_edge(visited, node)
+                    edge = self.graph.get_edge_between_nodes(visited, node)
                     if edge:
                         self.edges.append(edge)
                         self.prev_nodes.append(node)
@@ -43,30 +58,21 @@ class DFSAnimation(AlgorithmAnimation):
                 if not neighbour in self.visited:
                     self.stack.append(neighbour)
         else:
-            self.start_node = None
+            self.cur_node = None
 
     def get_drawn_nodes(self):
         ret = []
 
         if self.start_node:
-            ret.append({
-                "node": self.start_node,
-                "color": "#0f0"
-            })
+            ret.append({"node": self.start_node, "color": START_NODE_COLOR})
 
         length = len(self.prev_nodes)
         if length > 1:
             for i in range(length - 1):
-                ret.append({
-                    "node": self.prev_nodes[i],
-                    "color": "#f00"
-                })
+                ret.append({"node": self.prev_nodes[i], "color": SEEN_NODE_COLOR})
 
         if length > 0:
-            ret.append({
-                "node": self.prev_nodes[-1],
-                "color": "#ff0"
-            })
+            ret.append({"node": self.prev_nodes[-1], "color": CURRENT_NODE_COLOR})
 
         return ret
 
@@ -76,24 +82,17 @@ class DFSAnimation(AlgorithmAnimation):
         length = len(self.edges)
         if length > 1:
             for i in range(length - 1):
-                ret.append({
-                    "edge": self.edges[i],
-                    "color": "#f0f"
-                })
+                ret.append({"edge": self.edges[i], "color": SEEN_EDGE_COLOR})
 
         if length > 0:
-            ret.append({
-                "edge": self.edges[-1],
-                "color": "#ff0"
-            })
+            ret.append({"edge": self.edges[-1], "color": CURRENT_EDGE_COLOR})
 
         return ret
 
-    def print_algorithm(self):
-
+    def get_result_string(self):
         ret = []
         visited = []
-        stack = [self.start_node]
+        stack = [self.cur_node]
 
         while len(stack) > 0:
             node = stack[-1]
@@ -107,4 +106,6 @@ class DFSAnimation(AlgorithmAnimation):
                 if not neighbour.id in visited:
                     stack.append(neighbour)
 
-        print("DFS result:", " -> ".join([str(i) for i in ret]))
+        result_str = " -> ".join([str(i) for i in ret])
+        print("DFS result:" + result_str)
+        return result_str

@@ -1,7 +1,21 @@
-from algorithm_animation import AlgorithmAnimation
+"""
+File: bfs_animation.py
+Author: Delano Lourenco
+Repo: https://github.com/3ddelano/graph-visualizer-python
+License: MIT
+"""
+
+from ..constants import (
+    CURRENT_EDGE_COLOR,
+    CURRENT_NODE_COLOR,
+    SEEN_EDGE_COLOR,
+    SEEN_NODE_COLOR,
+    START_NODE_COLOR,
+)
+from ..interfaces.animation_interface import AnimationInterface
 
 
-class BFSAnimation(AlgorithmAnimation):
+class BFSAnimation(AnimationInterface):
     def __init__(self, graph):
         self.graph = graph
         self.start_node = None
@@ -13,7 +27,6 @@ class BFSAnimation(AlgorithmAnimation):
     def set_start_node(self, node):
         self.start_node = node
         self.queue = [node]
-        self.print_algorithm()
 
     def is_ended(self):
         return len(self.queue) == 0
@@ -31,7 +44,7 @@ class BFSAnimation(AlgorithmAnimation):
 
             # Get the path from startnode to node
             for visited_node in self.visited:
-                edge = self.graph.get_edge(visited_node, node)
+                edge = self.graph.get_edge_between_nodes(visited_node, node)
                 if edge:
                     self.edges.append(edge)
                     self.prev_nodes.append(node)
@@ -49,24 +62,15 @@ class BFSAnimation(AlgorithmAnimation):
         ret = []
 
         if self.start_node:
-            ret.append({
-                "node": self.start_node,
-                "color": "#0f0"
-            })
+            ret.append({"node": self.start_node, "color": START_NODE_COLOR})
 
         length = len(self.prev_nodes)
         if length > 1:
             for i in range(length - 1):
-                ret.append({
-                    "node": self.prev_nodes[i],
-                    "color": "#f00"
-                })
+                ret.append({"node": self.prev_nodes[i], "color": SEEN_NODE_COLOR})
 
         if length > 0:
-            ret.append({
-                "node": self.prev_nodes[-1],
-                "color": "#ff0"
-            })
+            ret.append({"node": self.prev_nodes[-1], "color": CURRENT_NODE_COLOR})
 
         return ret
 
@@ -76,20 +80,14 @@ class BFSAnimation(AlgorithmAnimation):
         length = len(self.edges)
         if length > 1:
             for i in range(length - 1):
-                ret.append({
-                    "edge": self.edges[i],
-                    "color": "#f0f"
-                })
+                ret.append({"edge": self.edges[i], "color": SEEN_EDGE_COLOR})
 
         if length > 0:
-            ret.append({
-                "edge": self.edges[-1],
-                "color": "#ff0"
-            })
+            ret.append({"edge": self.edges[-1], "color": CURRENT_EDGE_COLOR})
 
         return ret
 
-    def print_algorithm(self):
+    def get_result_string(self):
         ret = []
 
         queue = [self.start_node]
@@ -106,4 +104,6 @@ class BFSAnimation(AlgorithmAnimation):
                     queue.append(adj_node)
                     visited.append(adj_node.id)
 
-        print("BFS result:", " -> ".join([str(i) for i in ret]))
+        result_str = " -> ".join([str(i) for i in ret])
+        print("BFS result:" + result_str)
+        return result_str

@@ -2,3 +2,4 @@
 __pycache__/
 edgelist.csv
 nodelist.csv
+*.tmp
