@@ -8,9 +8,7 @@ graph-visualizer-python
 <br>
 <br>
 
-<img alt="Python3" src="https://img.shields.io/badge/-Python3-3776AB?style=for-the-badge&logo=python&logoWidth=20&logoColor=white" />
-<img alt="Turtle" src="https://img.shields.io/badge/-Turtle-3776AB?style=for-the-badge" />
-<img alt="Tk" src="https://img.shields.io/badge/-Tk-3776AB?style=for-the-badge" />
+<img alt="Python3" src="https://img.shields.io/badge/-Python3-3776AB?style=for-the-badge&logo=python&logoWidth=20&logoColor=white" /> <img alt="Turtle" src="https://img.shields.io/badge/-Turtle-3776AB?style=for-the-badge" /> <img alt="Tk" src="https://img.shields.io/badge/-Tk-3776AB?style=for-the-badge" />
 
 Features
 --------------
