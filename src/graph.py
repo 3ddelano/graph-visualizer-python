@@ -121,9 +121,13 @@ class Graph(GraphInterface):
                 # Start dragging this edge
                 clicked_edge.is_dragging = True
                 self.dragging_edge_nodeA_offset = [
-                    clicked_edge.nodeA.pos[0], clicked_edge.nodeA.pos[1]]
+                    clicked_edge.nodeA.pos[0],
+                    clicked_edge.nodeA.pos[1],
+                ]
                 self.dragging_edge_nodeB_offset = [
-                    clicked_edge.nodeB.pos[0], clicked_edge.nodeB.pos[1]]
+                    clicked_edge.nodeB.pos[0],
+                    clicked_edge.nodeB.pos[1],
+                ]
                 self.dragging_edge_start_offset = [x, y]
                 self.dragging_edge = clicked_edge
 
@@ -139,8 +143,8 @@ class Graph(GraphInterface):
                     self.dragging_edge.is_dragging = False
                     self.dragging_edge = None
 
-                    #self.selected_edge = clicked_edge
-                    #self.selected_edge.is_selected = True
+                    # self.selected_edge = clicked_edge
+                    # self.selected_edge.is_selected = True
 
                 elif self.selected_edge:
                     # There was already a selected edge
@@ -212,7 +216,8 @@ class Graph(GraphInterface):
 
                         # Create an edge between the two nodes if there isnt one
                         edge_exists = self.is_edge_exists(
-                            self.selected_node, clicked_node)
+                            self.selected_node, clicked_node
+                        )
 
                         if not edge_exists:
                             edge = Edge(self.selected_node, clicked_node)
@@ -263,14 +268,26 @@ class Graph(GraphInterface):
             nodeA = self.dragging_edge.nodeA
             nodeB = self.dragging_edge.nodeB
 
-            nodeA.pos[0] = self.dragging_edge_nodeA_offset[0] + \
-                x - self.dragging_edge_start_offset[0]
-            nodeA.pos[1] = self.dragging_edge_nodeA_offset[1] + \
-                y - self.dragging_edge_start_offset[1]
-            nodeB.pos[0] = self.dragging_edge_nodeB_offset[0] + \
-                x - self.dragging_edge_start_offset[0]
-            nodeB.pos[1] = self.dragging_edge_nodeB_offset[1] + \
-                y - self.dragging_edge_start_offset[1]
+            nodeA.pos[0] = (
+                self.dragging_edge_nodeA_offset[0]
+                + x
+                - self.dragging_edge_start_offset[0]
+            )
+            nodeA.pos[1] = (
+                self.dragging_edge_nodeA_offset[1]
+                + y
+                - self.dragging_edge_start_offset[1]
+            )
+            nodeB.pos[0] = (
+                self.dragging_edge_nodeB_offset[0]
+                + x
+                - self.dragging_edge_start_offset[0]
+            )
+            nodeB.pos[1] = (
+                self.dragging_edge_nodeB_offset[1]
+                + y
+                - self.dragging_edge_start_offset[1]
+            )
 
     def onsave(self):
         # Save the list of nodes to a csv file
@@ -300,8 +317,7 @@ class Graph(GraphInterface):
             print(f"No {NODELIST_FILEPATH} and {EDGELIST_FILEPATH} files found")
             return
 
-        print(
-            f"Loading graph from {NODELIST_FILEPATH} and {EDGELIST_FILEPATH}")
+        print(f"Loading graph from {NODELIST_FILEPATH} and {EDGELIST_FILEPATH}")
         self.deselect_edges()
         self.deselect_nodes()
         self.nodes = []
@@ -390,8 +406,10 @@ class Graph(GraphInterface):
         self.draw_help(tur)
 
     def draw_help(self, tur):
-        main_lines = ["Graph Visualizer v1.0",
-                      "H key - Toggle help text"]
+        main_lines = [
+            "Graph Visualizer v1.0",
+            "H key - Toggle help text",
+        ]
         lines = [
             "Single Left Click - Add node / Select Node",
             "Single Right Click - Select Edge",
@@ -404,6 +422,7 @@ class Graph(GraphInterface):
             "B key - Start BFS at selected node",
             "N key - Start DFS at selected node",
             "F key - Toggle node Id visibility",
+            "github.com/3ddelano/graph-visualizer-python",
         ]
 
         font_size = 10
